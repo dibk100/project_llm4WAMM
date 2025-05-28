@@ -5,14 +5,23 @@ from model import BertClassifier
 from dataset import load_data
 from train import train
 from eval import evaluate
-import datetime
+from utils import *
 import os
+import wandb
+
+# 자동 로그인
+os.environ["WANDB_API_KEY"] = "your-wandb-api-key"  # 여기에 본인의 API 키 입력
+wandb.login()
 
 def main():
     model_name = "base.yaml"                    # 모델 변경시 활용
     with open(model_name) as f:
         config = yaml.safe_load(f)
 
+    project = config["project"]
+    wandb.init(project=project, config=config)
+    config = wandb.config  
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     tokenizer = BertTokenizer.from_pretrained(config["model"]["name"])
@@ -31,15 +40,33 @@ def main():
     
     num_epochs = config["training"]["epochs"]
     patience = config["training"]["patience"]
-    model_path = config["training"].get("model_path", "best_model.pt")
-    criterion = torch.nn.BCEWithLogitsLoss()
-    optimizer
-    ## 실행
+    labels = config["model"]["num_labels"]
+    
+    # Loss 함수: multi-label 여부에 따라 다르게 설정
+    if labels > 2 :
+        criterion = torch.nn.BCEWithLogitsLoss()
+    else:
+        criterion = torch.nn.CrossEntropyLoss()
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=config["training"]["lr"])
+
+    # 초기화
+    best_f1 = 0.0
+    epochs_no_improve = 0
     
     for epoch in range(num_epochs):
         train_avg_loss, train_f1 = train(model, train_loader, criterion, optimizer, device)
         test_f1  = evaluate(model, test_loader, device)
+        
+        ## 기록
+        wandb.log({
+        "train/loss": train_avg_loss,
+        "train/f1": train_f1,
+        "test/f1": test_f1,
+        "epoch": epoch + 1
+        })
 
+        ## 기록
         print(f"Epoch {epoch+1}/{num_epochs} | "
             f"Train Loss: {train_avg_loss:.4f}, Train F1: {train_f1:.4f}, "
             f"Test F1: {test_f1 :.4f}")
@@ -47,13 +74,8 @@ def main():
         if test_f1 > best_f1:
             best_f1 = test_f1
             epochs_no_improve = 0
-            
-            today = datetime.datetime.now().strftime("%Y%m%d")  # 현재 날짜: YYYYMMDD
-            ckpt_dir = os.path.join("outputs", "checkpoints")
-            best_model_path = f"{model_name}_{today}_best_model_f1_{best_f1:.4f}.pth"
-            ckpt_path = os.path.join(ckpt_dir, best_model_path)
-            torch.save(model.state_dict(), ckpt_path)
-            print(f">>> Best model saved: {best_model_path} (F1: {best_f1:.4f}%)")
+            save_best_model(model, save_dir="outputs", base_name=model_name, num_labels=labels, best_f1=best_f1)
+        
         else :
             epochs_no_improve += 0
             print(f"⚠️ No improvement for {epochs_no_improve} epoch(s)")
