@@ -1,0 +1,15 @@
+model:
+  name: "bert-base-uncased"
+  num_labels: 2
+
+training:
+  batch_size: 16
+  epochs: 5
+  learning_rate: 2e-5
+  max_length: 128
+  patience: 2                     # 2 에폭 연속으로 검증 성능이 향상되지 않으면 학습 조기 종료
+
+data:
+  train_file: "train.csv"
+  test_file: "test.csv"
+

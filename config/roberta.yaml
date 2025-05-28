@@ -1,0 +1,15 @@
+model:
+  name: "roberta-base"
+  num_labels: 2
+
+training:
+  batch_size: 16
+  epochs: 5
+  learning_rate: 2e-5
+  max_length: 128
+  patience: 2
+
+data:
+  train_file: "train.csv"
+  test_file: "test.csv"
+
