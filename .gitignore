@@ -10,6 +10,7 @@
 */wandb
 *.pth
 data/
+*.env
 
 ### Linux ###
 *~
