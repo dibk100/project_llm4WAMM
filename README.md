@@ -6,8 +6,18 @@
 ### 📁 Folder Structure
 ```
 project_llm4WAMM/
-├── data/               # 데이터셋
-└── requirements.txt    # 
+├── config/                     # 설정 파일
+│   └── yaml
+├── saved_models/               # 학습된 모델 저장 
+│   └── pt
+├── data_analysis_EDA.ipynb     # 데이터 분석 및 전처리    
+├── dataset.py              
+├── eval.py                     # 모델 평가(val/test)
+├── main.py                 
+├── model.py                
+├── train.py                
+├── utils.py               
+└── requirements.txt    
 ```
 
 ### 📦 Data Description
