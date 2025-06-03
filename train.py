@@ -1,36 +1,38 @@
-from sklearn.metrics import f1_score
+import torch
+from transformers import get_scheduler
+from torch.optim import AdamW
 
-def train(model, train_loader, criterion, optimizer, device):
+def train(model, dataloader, optimizer, device, num_epochs=3, lr=5e-5):
+    model.to(device)
     model.train()
-    total_loss = 0
-    all_preds = []
-    all_labels = []
     
-    for batch in train_loader:
-        inputs, labels = batch
-        inputs, labels = inputs.to(device), labels.to(device)
-        
-        # print("Input shape:", inputs.shape)
-        # print("Input dtype:", inputs.dtype)
-        
-        # raise ValueError(">> 뭐가 문제일까")
-        
-        # inputs, labels = batch[0], batch[1]
-        # inputs, labels = inputs.to(device), labels.to(device)
+    # criterion 어디서 정의
 
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)       # 다중 라벨이면 labels.float()
-        loss.backward()
-        optimizer.step()
+    optimizer = AdamW(model.parameters(), lr=lr)
+    scheduler = get_scheduler(
+        "linear",
+        optimizer=optimizer,
+        num_warmup_steps=0,
+        num_training_steps=len(dataloader) * num_epochs
+    )
 
-        total_loss += loss.item()
-        _, predicted = outputs.max(1)
-        all_preds.extend(predicted.cpu().numpy())
-        all_labels.extend(labels.cpu().numpy())
-    
-    avg_loss = total_loss / len(train_loader)
-    f1 = f1_score(all_labels, all_preds, average='macro')  # 또는 'weighted', multi-label macro F1
-    return avg_loss, f1
+    for epoch in range(num_epochs):
+        total_loss = 0
+        for batch in dataloader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            outputs = model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                labels=batch["labels"]
+            )
+            loss = outputs["loss"]
 
+            loss.backward()
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
 
+            total_loss += loss.item()
+
+        avg_loss = total_loss / len(dataloader)
+        print(f"[Epoch {epoch+1}] Loss: {avg_loss:.4f}")

@@ -1,18 +1,32 @@
 import torch
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 
-def evaluate(model, test_loader, device):
+def evaluate(model, dataloader, device, threshold=0.5):
+    model.to(device)
     model.eval()
+
     all_preds = []
     all_labels = []
 
     with torch.no_grad():
-        for inputs, labels in test_loader:
-            inputs = inputs.to(device)
-            outputs = model(inputs)
-            _, predicted = outputs.max(1)
-            all_preds.extend(predicted.cpu().numpy())
-            all_labels.extend(labels.numpy())
+        for batch in dataloader:
+            labels = batch["labels"]
+            batch = {k: v.to(device) for k, v in batch.items()}
 
-    f1 = f1_score(all_labels, all_preds, average='macro')  # 또는 'weighted', 'micro'
-    return f1
+            outputs = model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"]
+            )
+            logits = outputs["logits"]
+            probs = torch.sigmoid(logits)
+            preds = (probs > threshold).int().cpu()
+
+            all_preds.extend(preds.tolist())
+            all_labels.extend(labels.cpu().tolist())
+
+    f1 = f1_score(all_labels, all_preds, average="macro")
+    precision = precision_score(all_labels, all_preds, average="macro")
+    recall = recall_score(all_labels, all_preds, average="macro")
+
+    print(f"F1 Score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
+    return f1, precision, recall
