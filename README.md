@@ -22,9 +22,9 @@ project_llm4WAMM/
 
 # 📝 BERT 실험 기록
 
-**Update**: 2025.06.03
+**Update**: 2025.06.03   
 **Task:** `TASK01_멀티 라벨 분류`  
-**Loss Function:** `BCEWithLogitsLoss`
+**Loss Function:** `BCEWithLogitsLoss`   
 
 | Model              | Val Loss | Macro F1 | Micro F1 | Partial Score |
 |--------------------|----------|----------|----------|----------------|
