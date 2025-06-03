@@ -8,7 +8,7 @@
 *.zip
 *.csv
 *.xlsx
-*/wandb
+wandb/
 *.json
 data/
 *.env
