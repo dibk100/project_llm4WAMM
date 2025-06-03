@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from dataset import get_dataset
 from model import get_model
+from utils import partial_match_score
 
 @torch.no_grad()
 def evaluate_model_val(model, data_loader, device):
@@ -25,10 +26,11 @@ def evaluate_model_val(model, data_loader, device):
     y_true = torch.cat(all_labels).numpy()
     y_pred = torch.cat(all_preds).numpy()
 
-    macro_f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
-    micro_f1 = f1_score(y_true, y_pred, average='micro', zero_division=0)
+    macro_f1 = f1_score(y_true, y_pred, average='macro', zero_division=1)
+    micro_f1 = f1_score(y_true, y_pred, average='micro', zero_division=1)
+    partial_score = partial_match_score(y_true, y_pred)
 
-    return avg_loss, macro_f1, micro_f1
+    return avg_loss, macro_f1, micro_f1, partial_score
 
 @torch.no_grad()
 def evaluate_model(config, split='test', threshold=0.5):
@@ -64,8 +66,9 @@ def evaluate_model(config, split='test', threshold=0.5):
     y_true = torch.cat(all_labels).numpy()
     y_pred = torch.cat(all_preds).numpy()
 
-    macro_f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
-    micro_f1 = f1_score(y_true, y_pred, average='micro', zero_division=0)
+    macro_f1 = f1_score(y_true, y_pred, average='macro', zero_division=1)
+    micro_f1 = f1_score(y_true, y_pred, average='micro', zero_division=1)
+    partial_score = partial_match_score(y_true, y_pred)
 
-    print(f"[{split}] Loss: {avg_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}")
+    print(f"[{split}] Loss: {avg_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}| Partial Match Score: {partial_score:.4f}")
     return avg_loss, macro_f1, micro_f1

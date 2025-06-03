@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader
-from transformers import AdamW, get_scheduler
+from torch.optim import AdamW
+from transformers import get_scheduler
 import wandb
 from dataset import get_dataset
 from model import get_model
@@ -24,11 +25,12 @@ def train_model(config):
     model = get_model(config)
     model.to(config['device'])
 
-    optimizer = AdamW(model.parameters(), lr=config['learning_rate'])
+    optimizer = AdamW(model.parameters(), lr=float(config['learning_rate']))
     num_training_steps = config['epochs'] * len(train_loader)
     lr_scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
 
     best_val_loss = float('inf')
+    best_score = 0
 
     for epoch in range(config['epochs']):
         model.train()
@@ -44,27 +46,29 @@ def train_model(config):
             total_loss += loss.item()
 
         avg_train_loss = total_loss / len(train_loader)
-        print(f"Epoch {epoch+1} | Train Loss: {avg_train_loss:.4f}")
+        print(f"\nEpoch {epoch+1} | Train Loss: {avg_train_loss:.4f}")
 
         # 검증 평가
-        val_loss, macro_f1, micro_f1 = evaluate_model_val(model, val_loader, config['device'])
+        val_loss, macro_f1, micro_f1, partial_score  = evaluate_model_val(model, val_loader, config['device'])
 
-        print(f"Epoch {epoch+1} | Val Loss: {val_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}")
+        print(f"Epoch {epoch+1} | Val Loss: {val_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}| Partial Score: {partial_score:.4f}")
 
         wandb.log({
             'epoch': epoch + 1,
             'train_loss': avg_train_loss,
             'val_loss': val_loss,
             'macro_f1': macro_f1,
-            'micro_f1': micro_f1
+            'micro_f1': micro_f1,
+            'partial_score' : partial_score,
         })
 
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
+        if partial_score > best_score:
+            best_score = partial_score
             save_best_model(
                 model,
                 save_dir=config['save_path'],
                 base_name=config['model_name'],
                 epoch=epoch + 1,
-                val_loss=val_loss
+                val_loss=val_loss,
+                partial_score = partial_score,
             )

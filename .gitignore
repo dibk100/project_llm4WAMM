@@ -4,11 +4,12 @@
 # github에 공개하면 안되는 자료 및 데이터
 ### self ###
 *.pt
+*.pth
 *.zip
 *.csv
 *.xlsx
 */wandb
-*.pth
+*.json
 data/
 *.env
 

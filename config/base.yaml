@@ -6,7 +6,7 @@ threshold: 0.5                  # 멀티라벨 분류시 threshold 값 (sigmoid 
 
 # 모델 저장 경로
 save_path: "./saved_models"           # 
-best_model_path:                      # eval용
+best_model_path: ./saved_models/bert-base-uncased/bert-base-uncased_epoch1_valLoss0.5323_0603_1758.pth                      # eval용
 
 # 데이터 경로 설정
 data_dir: ./data                
