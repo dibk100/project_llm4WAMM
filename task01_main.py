@@ -8,7 +8,7 @@ import os
 
 def main():
     load_dotenv(verbose=True)               # .env심기, wandb로그인 key
-    parser = argparse.ArgumentParser(description="Bert with Unsloth and wandb")
+    parser = argparse.ArgumentParser(description="BERT-based multi-label classification")
     parser.add_argument('--mode', choices=['train', 'eval'], required=True)
     parser.add_argument('--config', type=str, required=True, help='Path to config YAML')
     args = parser.parse_args()
