@@ -1,0 +1,28 @@
+# 모델 설정
+model_name: "bert-base-uncased"
+labels: ["Balling", "Bead Cut", "Humping", "Lack of fusion", "Normal"]  # 라벨 목록
+max_length: 256                 # 512까지 필요할까? 데이터 텍스트 길이 분포 확인 후 수정
+threshold: 0.5                  # 멀티라벨 분류시 threshold 값 (sigmoid 기준) : # F1 개선을 위해 기본 0.5보다 살짝 낮춰 시작할지 고민됨
+
+# 모델 저장 경로
+save_path: "./saved_models_kFold"           # 
+# best_model_path: ./saved_models/bert-base-uncased/0603_1912_epoch17_valLoss0.4121_partialScore_0.6295.pth                      # eval용
+
+# 데이터 경로 설정
+data_dir: ../data                
+train_file: k_fold_bert_train_waam_cls_p1.json                                   #bert_train_waam_cls_p1.json           
+# val_file: bert_val_waam_cls_p1.json          
+test_file: bert_test_waam_cls_p1.json             
+
+# 학습 설정
+batch_size: 8       # 데이터 작고, 클래스 불균형 → 작은 배치 사이즈로 더 자주 업데이트
+epochs: 50
+learning_rate: 3e-5
+seed: 42
+device: "cuda"  
+best_epoch : 50
+n_splits : 5
+patience : 10
+
+# wandb 설정
+wandb_project: "kFold_bert-multilabel"

@@ -54,7 +54,7 @@ class MultiLabelDataset(Dataset):
 def get_dataset(config, split='train'):
     file_map = {
         'train': config['train_file'],
-        'val': config['val_file'],
+        # 'val': config['val_file'],
         'test': config['test_file']
     }
     json_path = os.path.join(config['data_dir'], file_map[split])
