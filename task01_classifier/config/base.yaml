@@ -6,7 +6,11 @@ threshold: 0.5                  # 멀티라벨 분류시 threshold 값 (sigmoid 
 
 # 모델 저장 경로
 save_path: "./saved_models_kFold"           # 
+<<<<<<< HEAD
 best_model_path: ./saved_models_kFold/bert-base-uncased_final.pt                      # eval용
+=======
+# best_model_path: ./saved_models/bert-base-uncased/0603_1912_epoch17_valLoss0.4121_partialScore_0.6295.pth                      # eval용
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
 
 # 데이터 경로 설정
 data_dir: ../data                

@@ -5,11 +5,19 @@ max_length: 256                 # 512까지 필요할까? 데이터 텍스트 �
 threshold: 0.5                  # 멀티라벨 분류시 threshold 값 (sigmoid 기준) : # F1 개선을 위해 기본 0.5보다 살짝 낮춰 시작할지 고민됨
 
 # 모델 저장 경로
+<<<<<<< HEAD
 save_path: "./saved_models_kFold"           # 
 best_model_path: ./saved_models_kFold/roberta-base_final.pt                      # eval용
 
 # 데이터 경로 설정
 data_dir: ../data                
+=======
+save_path: "./saved_models"           # 
+best_model_path: ./saved_models/roberta-base/0603_1944_epoch22_valLoss0.4290_partialScore_0.5982.pth                      # eval용
+
+# 데이터 경로 설정
+data_dir: ./data                
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
 train_file: k_fold_bert_train_waam_cls_p1.json                                   #bert_train_waam_cls_p1.json           
 # val_file: bert_val_waam_cls_p1.json          
 test_file: bert_test_waam_cls_p1.json             
@@ -20,6 +28,7 @@ epochs: 50
 learning_rate: 3e-5
 seed: 42
 device: "cuda"  
+<<<<<<< HEAD
 best_epoch : 50
 n_splits : 5
 patience : 10
@@ -27,3 +36,8 @@ patience : 10
 # wandb 설정
 wandb_project: "kFold_bert-multilabel"
 #"bert-multilabel"
+=======
+
+# wandb 설정
+wandb_project: "bert-multilabel"
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb

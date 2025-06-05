@@ -83,7 +83,11 @@ def train_model_kfold_and_save_best(config):
     full_dataset = get_dataset(config, split='train')
     kf = KFold(n_splits=config['n_splits'], shuffle=True, random_state=config['seed'])
 
+<<<<<<< HEAD
     best_val_loss = float('inf')
+=======
+    best_score = -1
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
     best_model_path = None
     best_epoch = 0
 
@@ -93,6 +97,7 @@ def train_model_kfold_and_save_best(config):
         train_dataset = Subset(full_dataset, train_idx)
         val_dataset = Subset(full_dataset, val_idx)
 
+<<<<<<< HEAD
         model_path, loss, epoch = train_on_fold(train_dataset, val_dataset, fold, config)
 
         if loss < best_val_loss:
@@ -101,6 +106,15 @@ def train_model_kfold_and_save_best(config):
             best_epoch = epoch
 
     print(f"\n🏆 Best Fold Score: {best_val_loss:.4f}")
+=======
+        model_path, score, best_epoch = train_on_fold(train_dataset, val_dataset, fold, config)
+
+        if score > best_score:
+            best_score = score
+            best_model_path = model_path
+
+    print(f"\n🏆 Best Fold Score: {best_score:.4f}")
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
     print(f"\n🏆 Best Model: {best_model_path}")
     return best_model_path, best_epoch
 
@@ -118,7 +132,11 @@ def train_on_fold(train_dataset, val_dataset, fold, config):
     run_name = f"{config['model_name']}_fold{fold+1}_lr{config['learning_rate']}_bs{config['batch_size']}_ep{config['epochs']}"
     wandb.init(project=config['wandb_project'], name=run_name, config=config, reinit=True)
 
+<<<<<<< HEAD
     best_loss = float('inf')
+=======
+    best_score = 0
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
     best_model_path = None
     early_stopping = EarlyStopping(patience=config.get('patience', 5), verbose=True)
 
@@ -148,8 +166,13 @@ def train_on_fold(train_dataset, val_dataset, fold, config):
             'partial_score': partial_score,
         })
 
+<<<<<<< HEAD
         if val_loss < best_loss:
             best_loss = val_loss
+=======
+        if partial_score > best_score:
+            best_score = partial_score
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
             best_epoch = epoch + 1
             best_model_path = save_best_model(
                 model,
@@ -160,13 +183,21 @@ def train_on_fold(train_dataset, val_dataset, fold, config):
                 partial_score=partial_score
             )
 
+<<<<<<< HEAD
         early_stopping(val_loss)
+=======
+        early_stopping(partial_score)
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
         if early_stopping.early_stop:
             print(f"⏹️ Early stopping triggered at epoch {epoch+1}")
             break
 
     wandb.finish()
+<<<<<<< HEAD
     return best_model_path, best_loss, best_epoch
+=======
+    return best_model_path, best_score, best_epoch
+>>>>>>> 91560e61ba21bf962a6f7116484b6e6df87fbfcb
 
 def retrain_best_model_on_full_data(config, best_model_path):
     print("\n📢 Retraining final model on full dataset...")
