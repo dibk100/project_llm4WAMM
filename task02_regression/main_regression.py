@@ -25,10 +25,8 @@ def main():
         else:
             print("Warning: WANDB_API_KEY not set. wandb login skipped.")
             assert False, "WANDB_API_KEY environment variable is missing."
-        
-        wandb.login(key=os.getenv("WANDB_API_KEY"))
-        best_model_path = train_model_kfold_and_save_best(config)
-        retrain_best_model_on_full_data(config, best_model_path)
+
+        train_model(config)
         wandb.finish()
         
     elif args.mode == 'eval':

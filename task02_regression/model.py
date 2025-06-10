@@ -1,17 +1,22 @@
-from transformers import BertForSequenceClassification, BertTokenizer
+from transformers import BertModel, BertTokenizer
+import torch
+import torch.nn as nn
 
-class BertRegressionModel:
-    def __init__(self, model_name='bert-base-uncased', device='cpu'):
-        self.device = device
+class BertRegressionModel(nn.Module):
+    def __init__(self, model_name):
+        super().__init__()
+        self.model_name = model_name  # 저장용
+        self.bert = BertModel.from_pretrained(model_name)
+        self.regressor = nn.Linear(self.bert.config.hidden_size, 1)
         self.tokenizer = BertTokenizer.from_pretrained(model_name)
-        self.model = BertForSequenceClassification.from_pretrained(
-            model_name,
-            num_labels=1,
-            problem_type="regression"
-        ).to(self.device)
-    
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        cls_output = outputs.last_hidden_state[:, 0, :]  # [CLS]
+        return self.regressor(cls_output)
+
     def get_model(self):
-        return self.model
-    
+        return self
+
     def get_tokenizer(self):
         return self.tokenizer

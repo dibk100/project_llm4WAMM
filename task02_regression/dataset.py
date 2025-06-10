@@ -1,6 +1,7 @@
 import json
 import torch
 from torch.utils.data import Dataset
+import os
 
 class MyDataset(Dataset):
     def __init__(self, texts, outputs, tokenizer, max_len=128):
@@ -35,6 +36,21 @@ def load_data(json_path):
         for line in f:
             data = json.loads(line)
             texts.append(data['text'])
-            outputs.append(float(data['output']))
+            outputs.append(float(data['label']))
     return texts, outputs
 
+def get_dataset(config, tokenizer, split='train'):
+    file_map = {
+        'train': config['train_file'],
+        'val': config['val_file'],
+        'test': config['test_file']
+    }
+    json_path = os.path.join(config['data_dir'], file_map[split])
+    texts, outputs = load_data(json_path)
+
+    return MyDataset(
+        texts=texts,
+        outputs=outputs,
+        tokenizer=tokenizer,
+        max_len=config.get('max_length', 512)  # optional 설정
+    )

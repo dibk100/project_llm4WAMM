@@ -1,14 +1,22 @@
-data:
-  train_path: ./data/train.json
-  test_path: ./data/test.json
-  max_len: 128
+model_name: "bert-base-uncased"
+max_len: 256
 
-training:
-  num_folds: 5
-  batch_size: 16
-  epochs: 3
-  saved_models_dir: ./saved_models
+# 모델 저장 경로
+save_path: "./saved_models
+best_model_path:       
 
-model:
-  final_model_dir: ./saved_models/final_model
-  model_name : 
+# 데이터 경로 설정
+data_dir: ../data                
+train_file: bert_train_waam_cls_p1.json                                   #bert_train_waam_cls_p1.json           
+val_file: bert_val_waam_cls_p1.json          
+test_file: bert_test_waam_cls_p1.json             
+
+# 학습 설정
+batch_size: 8       # 데이터 작고, 클래스 불균형 → 작은 배치 사이즈로 더 자주 업데이트
+epochs: 50
+learning_rate: 3e-5
+seed: 42
+device: "cuda"  
+
+# wandb 설정
+wandb_project: "bert_regression_project"
