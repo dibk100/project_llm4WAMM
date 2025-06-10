@@ -18,7 +18,7 @@ def evaluate_model_val(model, data_loader, device):
         loss = outputs.loss
         total_loss += loss.item()
 
-        preds = torch.sigmoid(outputs.logits) > 0.5
+        preds = torch.sigmoid(outputs.logits) > 0.5                     # 각 아웃풋에 대해 시그모이드 씌워서 계산..
         all_preds.append(preds.cpu())
         all_labels.append(labels.cpu())
 
@@ -29,8 +29,11 @@ def evaluate_model_val(model, data_loader, device):
     macro_f1 = f1_score(y_true, y_pred, average='macro', zero_division=1)
     micro_f1 = f1_score(y_true, y_pred, average='micro', zero_division=1)
     partial_score = partial_match_score(y_true, y_pred)
-
-    return avg_loss, macro_f1, micro_f1, partial_score
+    
+    exact_match_acc = (y_true == y_pred).all(axis=1).mean()
+    label_wise_acc = (y_true == y_pred).mean()                              # 각 라벨별로 맞은 비율을 계산해서 평균. 즉, 전체 라벨 요소 중에서 얼마나 맞았는지 계산
+    
+    return avg_loss, macro_f1, micro_f1, partial_score, exact_match_acc, label_wise_acc
 
 @torch.no_grad()
 def evaluate_model(config, split='test', threshold=0.5):
@@ -69,6 +72,10 @@ def evaluate_model(config, split='test', threshold=0.5):
     macro_f1 = f1_score(y_true, y_pred, average='macro', zero_division=1)
     micro_f1 = f1_score(y_true, y_pred, average='micro', zero_division=1)
     partial_score = partial_match_score(y_true, y_pred)
-
-    print(f"[{split}] Loss: {avg_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}| Partial Match Score: {partial_score:.4f}")
-    return avg_loss, macro_f1, micro_f1
+    
+    exact_match_acc = (y_true == y_pred).all(axis=1).mean()
+    label_wise_acc = (y_true == y_pred).mean()      
+    
+    print("✅ 최종 성능 평가\n")
+    print(f"[{split}] Loss: {avg_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}| Partial Match Score: {partial_score:.4f}| Exact Match Acc: {exact_match_acc:.4f}| Label Wise Acc: {label_wise_acc:.4f}")
+    return 

@@ -26,16 +26,15 @@ def main():
             print("Warning: WANDB_API_KEY not set. wandb login skipped.")
             assert False, "WANDB_API_KEY environment variable is missing."
         
-        # train_model(config)
-        best_model_path,best_epoch = train_model_kfold_and_save_best(config)
-        config['best_epoch'] = best_epoch
-        retrain_best_model_on_full_data(config, best_model_path)
+        train_model(config)
+        # best_model_path,best_epoch = train_model_kfold_and_save_best(config)
+        # config['best_epoch'] = best_epoch
+        # retrain_best_model_on_full_data(config, best_model_path)
         wandb.finish()
         
     elif args.mode == 'eval':
-        test_loss, test_macro_f1, test_micro_f1 = evaluate_model(config, split='test')
-        print("Test Macro F1:", test_macro_f1)
-    
+        evaluate_model(config, split='test')
+
     else :
         assert False, "다시 코드 실행"
         
