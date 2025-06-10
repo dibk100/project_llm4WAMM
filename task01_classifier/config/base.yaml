@@ -6,8 +6,8 @@ max_length: 256                 # 512까지 필요할까? 데이터 텍스트 �
 threshold: 0.5                  # 멀티라벨 분류시 threshold 값 (sigmoid 기준) : # F1 개선을 위해 기본 0.5보다 살짝 낮춰 시작할지 고민됨
 
 # 모델 저장 경로
-save_path: "./saved_models/bert-base-uncased/"           # 
-best_model_path: "./saved_models/bert-base-uncased/0610_1844_epoch16_valLoss0.4121_partialScore_0.6295.pth"
+save_path: "./saved_models/bert-base-uncased_multi/"           # 
+best_model_path: "./saved_models/bert-base-uncased_multi/checkpoint-epoch-19"
 
 # 데이터 경로 설정
 data_dir: ../data                
@@ -17,7 +17,7 @@ test_file: bert_test_waam_cls_p1.json
 
 # 학습 설정
 batch_size: 8       # 데이터 작고, 클래스 불균형 → 작은 배치 사이즈로 더 자주 업데이트
-epochs: 50
+epochs: 25
 learning_rate: 3e-5
 seed: 42
 device: "cuda"  
@@ -27,3 +27,4 @@ device: "cuda"
 
 # wandb 설정
 wandb_project: "bert-multilabel"
+#"bert-binary"

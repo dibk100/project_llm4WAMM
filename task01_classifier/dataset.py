@@ -50,6 +50,43 @@ class MultiLabelDataset(Dataset):
             'attention_mask': encoded['attention_mask'].squeeze(dim=0),
             'labels': torch.tensor(label_vector, dtype=torch.float)
         }
+        
+class BinaryLabelDataset(Dataset):
+    def __init__(self, json_path, normal_label_name, model_name, max_length=512):
+        self.normal_label_name = normal_label_name
+        self.max_length = max_length
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+        # json 데이터 로드
+        with open(json_path, 'r', encoding='utf-8') as f:
+            self.data = json.load(f)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        item = self.data[idx]
+        text = item['text']
+        label_list = item['label']  # 원래 멀티라벨 리스트
+
+        # "Normal"이 포함되면 1, 아니면 0
+        binary_label = 1 if self.normal_label_name in label_list else 0
+        
+        # 토크나이즈
+        encoded = self.tokenizer(
+            text,
+            max_length=self.max_length,
+            padding='max_length',
+            truncation=True,
+            return_tensors='pt',
+            return_token_type_ids=False
+        )
+        
+        return {
+            'input_ids': encoded['input_ids'].squeeze(dim=0),
+            'attention_mask': encoded['attention_mask'].squeeze(dim=0),
+            'labels': torch.tensor(binary_label, dtype=torch.float)  # float 타입, 0.0 or 1.0
+        }
 
 def get_dataset(config, split='train'):
     file_map = {
@@ -58,7 +95,18 @@ def get_dataset(config, split='train'):
         'test': config['test_file']
     }
     json_path = os.path.join(config['data_dir'], file_map[split])
-    return MultiLabelDataset(
+    
+    binary_bool = config['binary_bool']
+    if binary_bool :
+        return BinaryLabelDataset(
+            json_path=json_path,
+            normal_label_name="Normal",                         # 정상/비정상
+            model_name=config['model_name'],
+            max_length=config.get('max_length', 512)
+        )
+    
+    else :
+        return MultiLabelDataset(
         json_path=json_path,
         labels=config['labels'],
         model_name=config['model_name'],

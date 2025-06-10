@@ -1,79 +1,131 @@
 from torch.utils.data import DataLoader
-from torch.optim import AdamW
-from transformers import get_scheduler
 import wandb
 from dataset import get_dataset
-from model import get_model
+from model import *
 from utils import *
-from eval import evaluate_model_val
+from transformers import TrainingArguments
+from trainer import *
+import torch.nn.functional as F
 
+# trainer
 def train_model(config):
     set_seed(config['seed'])
     
-    # 자동 run_name 생성
     run_name = f"{config['model_name']}_lr{config['learning_rate']}_bs{config['batch_size']}_ep{config['epochs']}"
     wandb.init(project=config['wandb_project'], name=run_name, config=config)
 
-    # 데이터셋 & DataLoader
     train_dataset = get_dataset(config, split='train')
     val_dataset = get_dataset(config, split='val')
+    
+    binary_bool = config['binary_bool']
+    if binary_bool :
+        best_metric_ = "eval_loss"
+    else :
+        best_metric_ = "partial_score"
 
-    train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False)
+    training_args = TrainingArguments(
+        output_dir=config['save_path'],
+        run_name=run_name,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        save_steps = None,
+        save_total_limit=2,
+        logging_strategy="epoch",     # val 결과 로그 기록 주기 (optional)
+        learning_rate=float(config['learning_rate']),
+        per_device_train_batch_size=config['batch_size'],
+        per_device_eval_batch_size=config['batch_size'],
+        num_train_epochs=config['epochs'],
+        weight_decay=0.01,                          # AdamW 옵티마이저
+        load_best_model_at_end=True,
+        metric_for_best_model=best_metric_,  # 평가 지표
+        greater_is_better=False if binary_bool else True,  # 평가 지표가 클수록 좋은지 여부 (True면 큰 값이 좋음)
+        seed=config['seed'],
+        report_to='wandb',
+    )
 
-    # 모델 초기화
     model = get_model(config)
-    model.to(config['device'])
+    
+    trainer = CustomTrainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    binary_bool=config['binary_bool'],
+    compute_metrics=lambda eval_pred: compute_metrics_fn(eval_pred, binary_bool=config['binary_bool']),
+    callbacks=[PrintMetricsCallback,WandbEpochCallback],
+    )
+    
+    # print("확인용 : \n")
+    # print(training_args.to_dict())
+    
+    trainer.train()
 
-    optimizer = AdamW(model.parameters(), lr=float(config['learning_rate']))
-    num_training_steps = config['epochs'] * len(train_loader)
-    lr_scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
+# def train_model(config):
+#     set_seed(config['seed'])
+    
+#     # 자동 run_name 생성
+#     run_name = f"{config['model_name']}_lr{config['learning_rate']}_bs{config['batch_size']}_ep{config['epochs']}"
+#     wandb.init(project=config['wandb_project'], name=run_name, config=config)
 
-    # best_val_loss = float('inf')
-    best_score = 0
+#     # 데이터셋 & DataLoader
+#     train_dataset = get_dataset(config, split='train')
+#     val_dataset = get_dataset(config, split='val')
 
-    for epoch in range(config['epochs']):
-        model.train()
-        total_loss = 0
-        for batch in train_loader:
-            batch = {k: v.to(config['device']) for k, v in batch.items()}
-            outputs = model(**batch)
-            loss = outputs.loss
-            loss.backward()
-            optimizer.step()
-            lr_scheduler.step()
-            optimizer.zero_grad()
-            total_loss += loss.item()
+#     train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)
+#     val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False)
 
-        avg_train_loss = total_loss / len(train_loader)
-        print(f"\nEpoch {epoch+1} | Train Loss: {avg_train_loss:.4f}")
+#     # 모델 초기화
+#     model = get_model(config)
+#     model.to(config['device'])
 
-        # 검증 평가
-        val_loss, macro_f1, micro_f1, partial_score,exact_match_acc, label_wise_acc  = evaluate_model_val(model, val_loader, config['device'])
-        print(f"Epoch {epoch} | Val Loss: {val_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}| Partial Match Score: {partial_score:.4f}| Exact Match Acc: {exact_match_acc:.4f}| Label Wise Acc: {label_wise_acc:.4f}")
+#     optimizer = AdamW(model.parameters(), lr=float(config['learning_rate']))
+#     num_training_steps = config['epochs'] * len(train_loader)
+#     lr_scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
 
-        wandb.log({
-            'epoch': epoch,
-            'train_loss': avg_train_loss,
-            'val_loss': val_loss,
-            'macro_f1': macro_f1,
-            'micro_f1': micro_f1,
-            'partial_score' : partial_score,
-            'exact_match_acc' : exact_match_acc,
-            'label_wise_acc' : label_wise_acc
-        })
+#     # best_val_loss = float('inf')
+#     best_score = 0
 
-        if partial_score > best_score:
-            best_score = partial_score
-            save_best_model(
-                model,
-                save_dir=config['save_path'],
-                base_name=config['model_name'],
-                epoch=epoch,
-                val_loss=val_loss,
-                partial_score = partial_score,
-            )
+#     for epoch in range(config['epochs']):
+#         model.train()
+#         total_loss = 0
+#         for batch in train_loader:
+#             batch = {k: v.to(config['device']) for k, v in batch.items()}
+#             outputs = model(**batch)
+#             loss = outputs.loss
+#             loss.backward()
+#             optimizer.step()
+#             lr_scheduler.step()
+#             optimizer.zero_grad()
+#             total_loss += loss.item()
 
+#         avg_train_loss = total_loss / len(train_loader)
+#         print(f"\nEpoch {epoch+1} | Train Loss: {avg_train_loss:.4f}")
+
+#         # 검증 평가
+#         val_loss, macro_f1, micro_f1, partial_score,exact_match_acc, label_wise_acc  = evaluate_model_val(model, val_loader, config['device'])
+#         print(f"Epoch {epoch} | Val Loss: {val_loss:.4f} | Macro F1: {macro_f1:.4f} | Micro F1: {micro_f1:.4f}| Partial Match Score: {partial_score:.4f}| Exact Match Acc: {exact_match_acc:.4f}| Label Wise Acc: {label_wise_acc:.4f}")
+
+#         wandb.log({
+#             'epoch': epoch,
+#             'train_loss': avg_train_loss,
+#             'val_loss': val_loss,
+#             'macro_f1': macro_f1,
+#             'micro_f1': micro_f1,
+#             'partial_score' : partial_score,
+#             'exact_match_acc' : exact_match_acc,
+#             'label_wise_acc' : label_wise_acc
+#         })
+
+#         if partial_score > best_score:
+#             best_score = partial_score
+#             save_best_model(
+#                 model,
+#                 save_dir=config['save_path'],
+#                 base_name=config['model_name'],
+#                 epoch=epoch,
+#                 val_loss=val_loss,
+#                 partial_score = partial_score,
+#             )
 # # 추가로 진행한 코드
 # # kfold!
 # from sklearn.model_selection import KFold
