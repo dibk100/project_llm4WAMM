@@ -12,6 +12,8 @@ wandb/
 *.json
 data/
 *.env
+saved_models/
+saved_models_kFold/
 
 ### Linux ###
 *~
