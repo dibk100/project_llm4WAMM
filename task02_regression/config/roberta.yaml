@@ -1,0 +1,23 @@
+
+model_name: "roberta-base"
+max_len: 256
+
+# 모델 저장 경로
+save_path: "./saved_models"
+best_model_path: "./saved_models/roberta-base/0610_1630_epoch9_valLoss0.0936_rmse_0.3059.pth"       
+
+# 데이터 경로 설정
+data_dir: "../data"                
+train_file: "task02_train.json"                                   
+val_file: "task02_val.json"          
+test_file: "task02_test.json"             
+
+# 학습 설정
+batch_size: 8       # 데이터 작고, 클래스 불균형 → 작은 배치 사이즈로 더 자주 업데이트
+epochs: 50
+learning_rate: 3e-5
+seed: 42
+device: "cuda"  
+
+# wandb 설정
+wandb_project: "bert_regression_project"

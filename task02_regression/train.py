@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
-from transformers import AdamW, get_scheduler
+from transformers import get_scheduler
+from torch.optim import AdamW
 import wandb
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
@@ -34,7 +35,7 @@ def train_model(config):
     num_training_steps = config['epochs'] * len(train_loader)
     lr_scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
 
-    best_val_rmse = float('inf')
+    best_val_mse = float('inf')
     
     for epoch in range(config['epochs']):
         model.train()
@@ -54,20 +55,21 @@ def train_model(config):
         print(f"\nEpoch {epoch+1} | Train Loss: {avg_train_loss:.4f}")
 
         # 검증
-        val_loss, val_rmse, val_r2 = evaluate_model_val(model, val_loader, config['device'])
-        print(f"Epoch {epoch+1} | Val Loss: {val_loss:.4f} | Val RMSE: {val_rmse:.4f} | Val R²: {val_r2:.4f}")
+        val_loss, val_mse, val_rmse, val_r2 = evaluate_model_val(model, val_loader, config['device'])
+        print(f"Epoch {epoch+1} | Val Loss: {val_loss:.4f} | Val MSE: {val_mse:.4f} | Val RMSE: {val_rmse:.4f} | Val R²: {val_r2:.4f}")
 
         wandb.log({
             'epoch': epoch + 1,
             'train_loss': avg_train_loss,
             'val_loss': val_loss,
+            'val_mse': val_mse,
             'val_rmse': val_rmse,
             'val_r2': val_r2,
         })
 
         # Best 모델 저장
-        if val_rmse < best_val_rmse:
-            best_val_rmse = val_rmse
+        if val_mse < best_val_mse:
+            best_val_mse = val_mse
             save_best_model(
                 model,
                 save_dir=config['save_path'],

@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 from transformers import Trainer, TrainingArguments
 from model import BertRegressionModel
-from dataset import MyDataset, load_data
+from dataset import *
 
 @torch.no_grad()
 def evaluate_model_val(model, val_loader, device):
@@ -22,20 +22,17 @@ def evaluate_model_val(model, val_loader, device):
         all_labels.extend(batch['labels'].cpu().numpy())
 
     val_loss = total_loss / len(val_loader)
-    rmse = mean_squared_error(all_labels, all_preds, squared=False)
+    mse = mean_squared_error(all_labels, all_preds)
+    rmse = np.sqrt(mse)
     r2 = r2_score(all_labels, all_preds)
-    return val_loss, rmse, r2
+    return val_loss, mse, rmse, r2
 
 @torch.no_grad()
 def evaluate_model(config, split='test'):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"🧪 Using device: {device}")
 
-    test_path = config['data']['test_path']
-    max_len = config['data']['max_len']
-    texts, outputs = load_data(test_path)
-
-    model_path = config['model']['final_model_dir']
+    model_path = config['best_model_path']
 
     # 모델 초기화 및 가중치 로드
     model_wrapper = BertRegressionModel(config['model_name'])
@@ -44,11 +41,15 @@ def evaluate_model(config, split='test'):
     model_wrapper.eval()
 
     tokenizer = model_wrapper.get_tokenizer()
-
-    test_dataset = MyDataset(texts, outputs, tokenizer, max_len)
+    
+    # 데이터 세팅
+    test_path = config['test_file']
+    max_len = config['max_len']
+    
+    test_dataset = get_dataset(config, tokenizer,split="test")
 
     # Trainer 대신 직접 평가 루프 사용 (더 깔끔)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config['training']['batch_size'], shuffle=False)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config['batch_size'], shuffle=False)
 
     all_preds, all_labels = [], []
     criterion = torch.nn.MSELoss()
@@ -67,4 +68,4 @@ def evaluate_model(config, split='test'):
     rmse = np.sqrt(mse)
     r2 = r2_score(all_labels, all_preds)
 
-    return mse, rmse, r2
+    return avg_loss, mse, rmse, r2

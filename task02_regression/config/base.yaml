@@ -1,15 +1,16 @@
+
 model_name: "bert-base-uncased"
 max_len: 256
 
 # 모델 저장 경로
-save_path: "./saved_models
-best_model_path:       
+save_path: "./saved_models"
+best_model_path: "./saved_models/bert-base-uncased/0610_1558_epoch13_valLoss0.0889_rmse_0.2982.pth"       
 
 # 데이터 경로 설정
-data_dir: ../data                
-train_file: bert_train_waam_cls_p1.json                                   #bert_train_waam_cls_p1.json           
-val_file: bert_val_waam_cls_p1.json          
-test_file: bert_test_waam_cls_p1.json             
+data_dir: "../data"                
+train_file: "task02_train.json"                                   
+val_file: "task02_val.json"          
+test_file: "task02_test.json"             
 
 # 학습 설정
 batch_size: 8       # 데이터 작고, 클래스 불균형 → 작은 배치 사이즈로 더 자주 업데이트

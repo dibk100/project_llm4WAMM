@@ -30,7 +30,8 @@ def main():
         wandb.finish()
         
     elif args.mode == 'eval':
-        test_mse, test_rmse, test_r2 = evaluate_model(config, split='test')
+        test_loss, test_mse, test_rmse, test_r2 = evaluate_model(config, split='test')
+        print(f"✅ Test loss: {test_loss:.4f}")
         print(f"✅ Test MSE: {test_mse:.4f}")
         print(f"✅ Test RMSE: {test_rmse:.4f}")
         print(f"✅ Test R²: {test_r2:.4f}")

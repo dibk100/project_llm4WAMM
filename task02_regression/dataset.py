@@ -30,13 +30,10 @@ class MyDataset(Dataset):
 
 # 2. 데이터 로딩
 def load_data(json_path):
-    texts = []
-    outputs = []
     with open(json_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            data = json.loads(line)
-            texts.append(data['text'])
-            outputs.append(float(data['label']))
+        data_list = json.load(f)  # 파일 전체를 한꺼번에 파싱
+    texts = [item['text'] for item in data_list]
+    outputs = [float(item['label']) for item in data_list]
     return texts, outputs
 
 def get_dataset(config, tokenizer, split='train'):
