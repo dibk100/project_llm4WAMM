@@ -31,8 +31,9 @@ class MultiLabelDataset(Dataset):
                 label_vector[self.label2id[label]] = 1
             else:
                 # 만약 라벨이 정의된 라벨셋에 없으면 무시하거나 예외 처리
-                assert False, "라벨 이슈~~~"
+                print(label)
                 
+                raise ValueError(f"❌ 라벨 이슈 발생! label 값: {label}")
         
         # 텍스트 토크나이즈
         encoded = self.tokenizer(
@@ -70,7 +71,7 @@ class BinaryLabelDataset(Dataset):
         label_list = item['label']  # 원래 멀티라벨 리스트
 
         # "Normal"이 포함되면 1, 아니면 0
-        binary_label = 1 if self.normal_label_name in label_list else 0
+        binary_label = 1.0 if self.normal_label_name in label_list else 0.0     # float
         
         # 토크나이즈
         encoded = self.tokenizer(
@@ -85,13 +86,13 @@ class BinaryLabelDataset(Dataset):
         return {
             'input_ids': encoded['input_ids'].squeeze(dim=0),
             'attention_mask': encoded['attention_mask'].squeeze(dim=0),
-            'labels': torch.tensor(binary_label, dtype=torch.float)  # float 타입, 0.0 or 1.0
+            'labels': torch.tensor(binary_label, dtype=torch.float).unsqueeze(0)  # shape: (1,) 
         }
 
 def get_dataset(config, split='train'):
     file_map = {
         'train': config['train_file'],
-        'val': config['val_file'],
+        # val': config['val_file'],
         'test': config['test_file']
     }
     json_path = os.path.join(config['data_dir'], file_map[split])

@@ -5,11 +5,12 @@ def get_model(config):
     binary_bool = config['binary_bool']
 
     if binary_bool:
-        num_labels = 2
-        problem_type = "single_label_classification"  # 이진 분류용
+        num_labels = 1
+        # problem_type = "single_label_classification"  
     else:
         num_labels = len(config['labels'])
-        problem_type = "multi_label_classification"  # 멀티라벨용
+    
+    problem_type = "multi_label_classification"  # BCEWithLogitsLoss 사용!
 
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name,

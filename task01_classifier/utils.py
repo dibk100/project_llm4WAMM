@@ -46,29 +46,29 @@ def partial_match_score(y_true, y_pred):
     
     return np.mean(scores)
 
-# class EarlyStopping:
-#     def __init__(self, patience=5, verbose=False, delta=0):
-#         self.patience = patience
-#         self.verbose = verbose
-#         self.delta = delta
-#         self.counter = 0
-#         self.best_score = None
-#         self.early_stop = False
+class EarlyStopping:
+    def __init__(self, patience=5, verbose=False, delta=0):
+        self.patience = patience
+        self.verbose = verbose
+        self.delta = delta
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
 
-#     def __call__(self, current_score):
-#         if self.best_score is None:
-#             self.best_score = current_score
-#         elif current_score < self.best_score + self.delta:
-#             self.counter += 1
-#             if self.verbose:
-#                 print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
-#             if self.counter >= self.patience:
-#                 self.early_stop = True
-#         else:
-#             if self.verbose:
-#                 print(f"Score improved ({self.best_score:.4f} → {current_score:.4f})")
-#             self.best_score = current_score
-#             self.counter = 0
+    def __call__(self, current_score):
+        if self.best_score is None:
+            self.best_score = current_score
+        elif current_score < self.best_score + self.delta:
+            self.counter += 1
+            if self.verbose:
+                print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            if self.verbose:
+                print(f"Score improved ({self.best_score:.4f} → {current_score:.4f})")
+            self.best_score = current_score
+            self.counter = 0
 
 def compute_metrics_fn(eval_pred, binary_bool=False):
     logits, labels = eval_pred
