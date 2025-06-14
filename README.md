@@ -8,7 +8,7 @@
 
 - **이상탐지 (Anomaly Detection)**  
   - 정상/비정상 상태 분류 (Binary Classification)  
-  - 결함 유형별 라벨 분류 (Multi-label Classification)  
+  - 결함 유형별 라벨 분류 (Multi-label Classification) -> 결함 유형이 single or multi  
 
 - **에너지 예측 (Energy Prediction)**  
   - 열, 에너지 등의 수치 예측 (Regression)  

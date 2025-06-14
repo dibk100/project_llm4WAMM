@@ -1,30 +1,18 @@
 # 💡Info.
 
-- **TASK:** `Heat input`을 예측하는 **Regression task**
-  - **독립변수 (4개):**  `Avg Voltage`, `Avg Current`, `Travel Speed`, `Wire Feed Rate`
-  - **종속변수 (1개):**  `Heat input`
+- **TASK:** 
+    - `Heat input`/`Energy`을(수치) 예측하는 **Regression task**
 
-- **데이터**
-  - 원본 파일: `train_waam_cls_inst_p1.json`
-  - `text`에서 Heat input 관련 텍스트 제거 & 마지막에 "what~" 문장 제거
-  - 대신에 `"Predict the heat input."` 문장 추가
-  - `output`은 Heat input(수치값)으로 설정
-```
-"text": "~~~. Predict the heat input.",
-"label": 10.24
-```
-
-## 📝 BERT 실험 기록
-
-### TASK02: 에너지 예측 (수치 회귀)  
-- **Loss Function:** `MSELoss`  
-- **Update:** 2025.06.10  
-- **결과 :**   
-
-| Model              | Val Loss | MSE     | RMSE    | R² Score |
-|--------------------|----------|---------|---------|----------|
-| `bert-base-uncased`| 0.0902   | 0.0848  | 0.2912  | 0.9544   |
-| `roberta-base`     | 0.1076   | 0.1064  | 0.3261  | 0.9428   |
+- **Dataset**
+  - 원본 파일에서 템플릿화 함: `train_waam_pred_hi_p5.json`, `train_waam_pred_hi_p7.json`
+  - `input`(문장),`output`(수치값만 전처리함) 활용
+    ```
+    example.
+    {
+        "input": "The material used in the ~ .What is the result of the heat input with these experiment parameters?",
+        "output": "656.112."
+      }
+    ```
 
 ## 📁 Folder Structure
 ```

@@ -1,21 +1,16 @@
 # 💡Info.
 - **TASK :** 정상/비정상 분류(binary), 결함 유형 분류(multi)
 - **데이터**
-  - 원본 파일: `train_waam_cls_inst_p1.json`
-  - `input`,`output`만 활용
+  - 원본 파일에서 템플릿화 함: `train_waam_cls_p1.json`, `train_waam_cls_p3.json`
+  - `input`,`output`(unique label 6, single or multi) 활용
+    ```
+    example.
+    {
+      "input": "The material used in the ~. What is the expected result of the bead with these experiment parameters?",
+      "output": "Normal"
+      }
+    ```
 
-## 📝 BERT 실험 기록
-
-### 🔹 TASK01: 멀티 라벨 분류  
-- **Loss Function:** `BCEWithLogitsLoss` 
-- **모델 저장 기준:** Partial Score 기준   
-- **Update:** 2025.06.03   
-- **결과:**   
-
-| Model              | Val Loss | Macro F1 | Micro F1 | Partial Score |
-|--------------------|----------|----------|----------|----------------|
-| `bert-base-uncased`| 0.4596   | 0.5028   | 0.6267   | 0.6185         |
-| `roberta-base`     | 0.4368   | 0.5190   | 0.6196   | 0.6003         |
 <details>
 <summary>📊 평가지표 설명</summary>
 
@@ -27,25 +22,6 @@
 | **Partial Score**   | 일부 정답 라벨만 맞췄을 때도 점수를 부여하는 **커스텀 지표**. <br> 예: 일부 정답만 맞춰도 부분 점수를 인정함. |
 
 </details>   
-
----
-### 🔷 TASK01B: 이진 분류  
-- **데이터 전처리:**  
-  - 라벨에 `"Normal"`이 포함되어 있으면 → **Normal**  
-  - 그렇지 않으면 → **Abnormal**
-- **예측 처리:**  
-  ```python
-  preds = logits.argmax(axis=1)
-- **Loss Function:** `CrossEntropyLoss`    
-- **모델 저장 기준:** val_loss 기준
-- **Update:** 2025.06.10  
-- **결과:**   
- 
-| Model              | Val Loss | Macro F1 | Accuracy |
-|--------------------|----------|----------|----------------------------|
-| `bert-base-uncased` | 0.3767   | 0.7294   | 0.7823                     |
-| `roberta-base`      | 0.3441   | 0.7609   | 0.8231                     |
-
 
 ### 📁 Folder Structure
 ```
