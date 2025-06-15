@@ -19,8 +19,13 @@ class BertRegressionModel(nn.Module):
 
     def forward(self, input_ids, attention_mask):
         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
-        cls_output = outputs.last_hidden_state[:, 0, :]  # [CLS]
-        return self.regressor(cls_output)
+        
+        if self.model_name.startswith("roberta"):
+            cls_output = outputs.last_hidden_state[:, 0, :]  # RoBERTa는 pooler가 없음
+        else:
+            cls_output = outputs.pooler_output  # BERT는 pooler_output이 CLS임
+        
+        return self.regressor(cls_output).squeeze(-1)
 
     def get_model(self):
         return self

@@ -11,15 +11,26 @@ def set_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    
+def compute_metrics_made(eval_pred, mean, std):
+    #  print("################## compute_metrics called")  # 이 출력이 뜨는지 확인
+    preds, labels = eval_pred
+    preds = preds * std + mean
+    labels = labels * std + mean
+    
+    mse = ((preds - labels) ** 2).mean()
+    rmse = np.sqrt(mse)
+    r2 = r2_score(labels, preds)
+    return {'eval_mse': mse, 'eval_rmse': rmse, 'eval_r2': r2}
 
-def save_best_model(model, save_dir, base_name, epoch, val_loss,score):
+def save_best_model(model, save_dir, base_name,score):
     timestamp = datetime.datetime.now().strftime("%m%d_%H%M")
 
     ckpt_dir = os.path.join(save_dir, base_name)
     if not os.path.exists(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    model_filename = f"{timestamp}_epoch{epoch}_valLoss{val_loss:.4f}_rmse_{score:.4f}.pth"
+    model_filename = f"{timestamp}_rmse_{score:.4f}.pth"
     ckpt_path = os.path.join(ckpt_dir, model_filename)
 
     torch.save(model.state_dict(), ckpt_path)

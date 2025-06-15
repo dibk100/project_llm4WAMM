@@ -1,17 +1,16 @@
 
-model_name: "roberta-base"
+model_name: "bert-base-uncased"
 max_len: 256
 
 # 모델 저장 경로
-save_path: "./saved_models_heat"
-best_model_path: "./saved_models_heat/roberta-base/0615_2052_epoch20_valLoss6908.0308_rmse_83.1146.pth"   
-
+save_path: "./saved_models_e"
+best_model_path: "0615_2057_epoch12_valLoss67977408.0000_rmse_8244.8413.pth"   
 
 # 데이터 경로 설정
 data_dir: "../data/merged"                
-train_file: "train_task02_merged_train.json"            
-val_file: "train_task02_merged_train_val.json"                                         
-test_file: "test_task02_merged.json"        
+train_file: "train_task02_e_merged_train.json"            
+val_file: "train_task02_e_merged_train_val.json"                                         
+test_file: "test_task02_e_merged.json"        
 
 # 학습 설정
 batch_size: 8       # 데이터 작고, 클래스 불균형 → 작은 배치 사이즈로 더 자주 업데이트

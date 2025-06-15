@@ -5,7 +5,6 @@ import yaml
 import wandb
 from dotenv import load_dotenv
 import os
-import joblib
 
 def main():
     load_dotenv(verbose=True)               # .env심기, wandb로그인 key
@@ -27,9 +26,9 @@ def main():
             print("Warning: WANDB_API_KEY not set. wandb login skipped.")
             assert False, "WANDB_API_KEY environment variable is missing."
 
-        scaler = train_model(config)
-        # 정규화 객체 저장
-        joblib.dump(scaler, os.path.join(config['save_path'], config['model_name'],'scaler.pkl'))
+        # train_model(config)
+        best_model_path = train_model_kfold_and_save_best(config)
+        retrain_best_model_on_full_data(config, best_model_path)
         wandb.finish()
         
     elif args.mode == 'eval':
