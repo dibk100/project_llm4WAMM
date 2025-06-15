@@ -35,9 +35,12 @@
     - num_labels>=2 & problem_type='multi_label_classification' → `BCEWithLogitsLoss`
 - Trainer :
     - 수동학습 코드와 비교했을 때 결과 차이가 있었음.
-    - trainer 내부의 자동 최적화 기능(ex.weight_decay=0.01(AdamW 옵티마이저)) 설정 때문인지 정확한 원인을 모르겠음.
-    - [task02에서 bert 커스텀(regression)했더니 trainer로 loss값 얻을 때 이슈가 발생했었음](https://discuss.huggingface.co/t/implementing-a-trainer-with-custom-loss-produces-key-error/38171). foward() 커스텀함. `model.py` 에 상세 작성함.
-
+    - trainer 내부의 자동 최적화 기능(ex.weight_decay=0.01(AdamW 옵티마이저)) 설정 때문인지 정확한 원인을 모르겠음.    
+    - [task02에서 bert 커스텀(regression)했더니 trainer로 loss값 얻을 때 이슈가 발생했었음](https://discuss.huggingface.co/t/implementing-a-trainer-with-custom-loss-produces-key-error/38171). foward() 커스텀함. `model.py` 에 상세 작성함.    
+      - `log` 폴더에서 trainer + k-fold 실험
+    - 최종적으로 Task02는 수동학습 코드로 진행함.(Trainer는 커스텀 때문에 이슈가 너무 많이 발생하여 진도가 느림)   
+      - bert를 활용한 수치 예측문제로, 정규화-역정규화 과정이 필요함.
+      - train에서 활용한 scaler를 test에서도 활용해야해서 `scaler.pkl`을 저장하는 작업이 필요함.
 
 ## 📁 Folder Structure
 ```
@@ -78,25 +81,24 @@ project_llm4WAMM/
 ### 🔍 TASK02a: Heat input Regression
 - **Loss Function:** `MSELoss`  
 - **모델 저장 기준:** val_mse 기준
-- **Update:** 2025.06.14  
+- **Update:** 2025.06.15  
 - **결과 :**   
 
-| Model              | Val Loss | MSE     | RMSE    | R² Score |
-|--------------------|----------|---------|---------|----------|
-| `bert-base-uncased`| 0.0902   | 0.0848  | 0.2912  | 0.9544   |
-| `roberta-base`     | 0.1076   | 0.1064  | 0.3261  | 0.9428   |
+| Model              | Val Loss | MSE         | RMSE     | R² Score  |
+|--------------------|----------|-------------|----------|-----------|
+| `bert-base-uncased`| 0.0431   | 6128.6953   | 78.2860  | 0.9776|
+| `roberta-base`     | 0.0479   | 6812.7603   | 82.5394  | 0.9751    |
 
 ### 🔍 TASK02b: Energy Regression
 - **Loss Function:** `MSELoss`  
 - **모델 저장 기준:** val_mse 기준
-- **Update:** 2025.06.14  
+- **Update:** 2025.06.15  
 - **결과 :**   
 
-| Model              | Val Loss | MSE     | RMSE    | R² Score |
-|--------------------|----------|---------|---------|----------|
-| `bert-base-uncased`| 0.0902   | 0.0848  | 0.2912  | 0.9544   |
-| `roberta-base`     | 0.1076   | 0.1064  | 0.3261  | 0.9428   |
-
+| Model              | Val Loss | MSE            | RMSE       | R² Score  |
+|--------------------|----------|----------------|------------|-----------|
+| `bert-base-uncased`| 0.1329   | 186770672.0000 | 13666.4067 | 0.9217    |
+| `roberta-base`     | 0.1103   | 165254368.0000 | 12855.1300 | 0.9307|
 <!--
 ### To-Do
 
